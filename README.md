@@ -1,42 +1,64 @@
 # All-Purpose-Viewer
 Helps you view/check Videos on all Popular Platforms including YouTube, Facebook, and others
 
-This is Store-ready, conservative, and aligned with Apify reviewer expectations.
+# 🎬 Video Playback Monitor
 
-This Apify Actor Verifies HTML5 video playback availability using a lightweight browser session and residential networks.
-This Actor opens a publicly accessible webpage, attempts to start video playback using safe browser interactions, confirms that playback advances for a short duration, and reports the result in a structured dataset.
+**Reliable verification of HTML5 video playback availability — across regions, platforms, and time.**
 
-The Actor is designed for monitoring, QA, and availability verification, not for audience analytics or engagement measurement.
+Video Playback Monitor is a lightweight monitoring Actor that checks whether a video can actually start playing on a publicly accessible webpage. It opens the page in a real browser environment, attempts playback using safe user interactions, and reports clear, actionable results.
 
-What this Actor does :::
+Designed for **monitoring, QA, and availability verification** — not for traffic generation or engagement.
 
-Opens a webpage containing an HTML5 video
+---
 
-Attempts playback using:
+## ✅ Why use this Actor?
 
-muted autoplay
-a single click on the video element
-a single click on common play buttons
-Confirms playback by detecting time progression
-Stops playback explicitly and exits cleanly
-Emits a structured result with clear success or failure classification
+Because “the page loads” doesn’t mean **the video plays**.
 
-What this Actor does NOT do :::
+This Actor helps you detect:
 
-It does not bypass login or authentication walls
-It does not defeat DRM or platform safeguards
-It does not simulate human behavior
-It does not measure views, traffic, or engagement
+* videos that silently fail to start
+* region-specific playback restrictions
+* intermittent player issues
+* login or consent walls blocking playback
+* regressions introduced by site changes
 
-Typical use cases :::
+All with **predictable cost and transparent results**.
 
-Video playback availability monitoring
-Regional playback verification
-QA testing of video embeds
-Detecting intermittent playback failures
-Long-term monitoring when paired with a scheduler Actor
+---
 
-Platform compatibility :::
+## 🔍 What this Actor does
+
+For each run, the Actor:
+
+1. Opens the target page using a lightweight browser session
+2. Attempts to start video playback using safe browser interactions:
+
+   * muted autoplay
+   * a single click on the video element
+   * a single click on common play buttons
+3. Confirms playback by detecting real time progression
+4. Stops playback cleanly and exits
+5. Emits a structured result explaining **what happened and why**
+
+Each run produces **one clear playback availability check**.
+
+---
+
+## 🧪 Typical use cases
+
+* Video playback availability monitoring
+* QA testing of video embeds before release
+* Detecting regional playback issues
+* Monitoring CDN or player reliability
+* Debugging “video not playing” user reports
+* Long-term monitoring when paired with a scheduler
+
+If video availability matters, this Actor fits.
+
+---
+
+## 🌍 Platform compatibility
 
 Playback verification depends on whether a platform allows HTML5 video playback without authentication and with basic user interaction.
 
@@ -54,9 +76,77 @@ Playback verification depends on whether a platform allows HTML5 video playback 
 
 Platforms marked ⚠️ or ❌ may correctly report playback as unavailable due to platform restrictions.
 
-Failure reasons :::
+---
 
-If playback cannot be verified, the Actor reports a failure reason:
+## 🔎 How this Actor behaves on restricted platforms (e.g. YouTube)
+
+Some platforms intentionally restrict automated video playback unless a logged-in, interactive user is present. **YouTube is a common example**.
+
+On these platforms, the Actor still provides **useful monitoring signals**, even when full playback cannot be confirmed.
+
+### What typically happens
+
+When checking a public YouTube video page, the Actor may report:
+
+* `LOGIN_REQUIRED`
+  → Playback requires authentication or additional user interaction
+
+* `PLAYBACK_BLOCKED`
+  → The video player is present, but playback does not advance
+
+This is **expected behavior**, not an error.
+
+---
+
+### Why this is still useful
+
+Even when playback cannot be confirmed, the result answers important questions:
+
+* Is the page reachable from a given region?
+* Is the video element present at all?
+* Has the page structure changed?
+* Is playback gated behind login, consent, or policy checks?
+* Does behavior differ by country or time?
+
+For monitoring and QA workflows, these signals are often **exactly what you want to detect**.
+
+---
+
+### Recommended usage on restricted platforms
+
+Users often get the best results by:
+
+* Running checks from **multiple regions**
+* Comparing results over time
+* Watching for **changes in failure reason**
+
+  * e.g. `PLAYBACK_BLOCKED → NO_VIDEO`
+* Using the Actor to validate **availability**, not engagement
+
+---
+
+### Important expectations
+
+This Actor:
+
+* does **not** attempt to bypass platform safeguards
+* does **not** simulate logged-in users
+* does **not** defeat DRM or autoplay restrictions
+
+If a platform requires authenticated, interactive viewing, the Actor will **report that fact transparently**.
+
+---
+
+## 📊 Clear results you can trust
+
+Each run produces a single dataset record with:
+
+* whether playback was confirmed
+* **why** playback failed when it did
+* region and session context
+* timestamp for auditing and monitoring
+
+### Failure reasons explained
 
 | Reason              | Meaning                                     |
 | ------------------- | ------------------------------------------- |
@@ -66,26 +156,151 @@ If playback cannot be verified, the Actor reports a failure reason:
 | `NAVIGATION_FAILED` | Page could not be loaded                    |
 | `ERROR`             | Unexpected runtime error                    |
 
-These classifications help distinguish true playback failures from platform or access restrictions.
+These classifications help distinguish real playback issues from access restrictions.
 
-Cost and performance :::
+---
 
-Uses a single lightweight browser instance
-Aggressively blocks non-essential resources
-Explicitly shuts down video playback
-Memory usage is capped and predictable
+## 🧾 Example output snippets
 
-This ensures reliable execution and controlled costs even at scale.
+Each run produces exactly **one dataset record**.
+Below are typical examples to help you understand what to expect.
 
-Optional: time-delayed replays
-For long-term monitoring scenarios, this Actor can be paired with an optional replay scheduler Actor that re-runs playback checks after configurable delays and across regions.
+---
 
-The scheduler is optional and not required for standard usage.
+### ✅ Example: successful playback verification
 
-Responsibility notice :::
+```json
+{
+  "url": "https://example.com/video-page",
+  "sessionId": "session-123",
+  "countryCode": "US",
+  "watchSeconds": 60,
+  "playbackConfirmed": true,
+  "failureReason": null,
+  "timestamp": "2026-02-03T14:21:10.382Z"
+}
+```
 
-Users are responsible for ensuring they have the right to verify playback on target websites and that their usage complies with applicable terms and policies.
+**What this means**
 
-Summary :::
+* The page loaded successfully
+* A video element was found
+* Playback started and advanced
+* The video played for the configured duration
+* Playback availability is confirmed from this region
 
-Video Playback Monitor provides a reliable, cost-controlled way to verify whether HTML5 video playback is available on publicly accessible pages, with clear and honest reporting when playback is restricted.
+---
+
+### ⚠️ Example: restricted platform (e.g. YouTube)
+
+```json
+{
+  "url": "https://www.youtube.com/watch?v=abc123",
+  "sessionId": "session-456",
+  "countryCode": "DE",
+  "watchSeconds": 60,
+  "playbackConfirmed": false,
+  "failureReason": "PLAYBACK_BLOCKED",
+  "timestamp": "2026-02-03T14:27:55.904Z"
+}
+```
+
+**What this means**
+
+* The page was reachable
+* A video player was detected
+* Playback did not advance
+* The platform requires additional user interaction, authentication, or policy acceptance
+
+This is **expected behavior** on restricted platforms and represents a valid monitoring signal.
+
+---
+
+### 🔐 Example: login or consent required
+
+```json
+{
+  "url": "https://social.example.com/video/789",
+  "sessionId": "session-789",
+  "countryCode": "IN",
+  "watchSeconds": 60,
+  "playbackConfirmed": false,
+  "failureReason": "LOGIN_REQUIRED",
+  "timestamp": "2026-02-03T14:33:18.117Z"
+}
+```
+
+**What this means**
+
+* Playback is gated behind login or consent
+* The restriction was detected transparently
+* No attempt was made to bypass safeguards
+
+---
+
+### Key takeaway
+
+> A result where `playbackConfirmed = false` is not a failure of the Actor — it is a **meaningful monitoring outcome**.
+
+---
+
+## 💸 Cost & performance
+
+* One lightweight browser session per run
+* Aggressive resource blocking
+* Explicit media cleanup
+* Memory usage capped and predictable
+
+Each run is billed as **one playback availability check**, regardless of outcome.
+
+This makes the Actor suitable for:
+
+* ad-hoc checks
+* scheduled monitoring
+* long-term pipelines
+
+---
+
+## ⏱ Optional: scheduled rechecks
+
+For ongoing monitoring, this Actor can be paired with an optional replay scheduler that:
+
+* re-runs checks after configurable delays
+* rotates regions automatically
+* enforces daily execution limits
+* reduces unnecessary retries
+
+The scheduler is optional and provided separately.
+
+---
+
+## 🚫 What this Actor does NOT do
+
+To set clear expectations:
+
+* It does not bypass login, consent, or DRM restrictions
+* It does not simulate real viewers or engagement
+* It does not generate traffic, impressions, or views
+* It does not attempt to evade platform safeguards
+
+Failures on gated platforms are **expected and meaningful results**.
+
+---
+
+## ⚖️ Responsible usage
+
+You are responsible for ensuring that your usage complies with the terms and policies of the websites you monitor.
+
+This Actor is designed for legitimate monitoring and QA workflows.
+
+---
+
+## ⭐ Summary
+
+**Video Playback Monitor** gives you a reliable, cost-controlled way to answer a simple but critical question:
+
+> *“Can this video actually start playing right now — and if not, why?”*
+
+Even on restricted platforms, the Actor provides **diagnostic signals** that help you monitor availability, detect changes, and respond confidently.
+
+
